@@ -3,6 +3,7 @@ import json
 import datetime
 import numpy as np
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 
 ACCESS_TOKEN = '17da724517da724517da72458517b8abce117da17da72454d235c274f1a2be5f45ee711'
@@ -16,7 +17,15 @@ def calc_age(uid):
         params = {'user_id': uid, 'access_token': ACCESS_TOKEN, 'fields': 'bdate'}
         r = requests.get(get_friends_info_url, params=params).json()
         friends_list = r.get('response').get('items')
-    return friends_list
+        friend_df = pd.DataFrame(friends_list)
+        BD_column = friend_df.bdate.dropna(axis=0)
+        BD_column = pd.to_datetime(BD_column, format='%d.%m.%Y', errors='coerce').dropna(axis=0)
+        age = pd.DataFrame({'age': cur_year-BD_column.dt.year})
+        fin_df = age.groupby('age').size().reset_index(name='counts').sort_values(by=['counts', 'age'],
+                                                                                  ascending=[False, True])
+        age_json = fin_df.to_json(orient='records')
+
+    return age_json
 
 
 def get_user_id(user_id):
@@ -31,5 +40,5 @@ def get_user_id(user_id):
    # print(r.text)
 
 if __name__ == '__main__':
-    res = calc_age('reigning')
+    res = calc_age('medoeje')
     print(res)
