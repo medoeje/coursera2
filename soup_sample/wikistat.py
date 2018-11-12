@@ -46,3 +46,9 @@ def parse(start, end, path):
         out[file] = [imgs, headers, linkslen, lists]
 
     return out
+
+file_text = open(path+end, encoding='utf-8').read()
+soup = BeautifulSoup(file_text)
+
+bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
+bs_hrefs = [link['href'] for link in bs_links]

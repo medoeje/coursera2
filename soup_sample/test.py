@@ -8,7 +8,8 @@ correct = {
 }
 start = 'Stone_Age'
 end = 'Python_(programming_language)'
-path = './wiki/'
+path = './soup_sample/wiki/'
+# path = './wiki/'
 
 count = 0
 max_count = len(correct)
