@@ -50,5 +50,6 @@ def parse(start, end, path):
 file_text = open(path+end, encoding='utf-8').read()
 soup = BeautifulSoup(file_text)
 
+# TODO отдельная процедура для поиска ссылок по заранее скомпилированной регулярке для файла
 bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
 bs_hrefs = [link['href'] for link in bs_links]
