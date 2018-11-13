@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 import re
 import os
 
-
 # Вспомогательная функция, её наличие не обязательно и не будет проверяться
 def build_tree(start, end, path):
     link_re = re.compile(r"(?<=/wiki/)[\w()]+")  # Искать ссылки можно как угодно, не обязательно через re
@@ -47,9 +46,42 @@ def parse(start, end, path):
 
     return out
 
-file_text = open(path+end, encoding='utf-8').read()
-soup = BeautifulSoup(file_text)
+
 
 # TODO отдельная процедура для поиска ссылок по заранее скомпилированной регулярке для файла
-bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
-bs_hrefs = [link['href'] for link in bs_links]
+def find_connected_links(path, base_link):
+    file_text = open(path + base_link, encoding='utf-8').read()
+    soup = BeautifulSoup(file_text)
+    bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
+    bs_hrefs = [re.sub(r'/wiki/', '', link['href']) for link in bs_links]
+    return bs_hrefs
+    # return dict.fromkeys(bs_hrefs, base_link)
+
+def build_tree(path, base_link):
+    tree = {}
+    find_connected_links(path, base_link)
+
+def find_route(path, start_link, end_link):
+    tree_head = ['start_link', 'route', 'end_link', 'status']
+    tree = [start_link, start_link, start_link, 1]
+    while True:
+        build_tree
+        if end_link in tree:
+            break
+
+start = 'Stone_Age'
+end = 'Python_(programming_language)'
+path = './soup_sample/wiki/'
+
+'''
+1. Точка отсчёта
+2. Конечная точка
+3. Путь
+4. Ищем все ссылки конечной точки
+5. Дописываем в путь новую конечную точку если её ещё не было, в противном случае стамим метку
+6. Обновляем конечную точку
+7. Делаем пока не найдём нужный файл
+
+'''
+
+# TODO сделать проверку что в найденых destinations нет самого себя
