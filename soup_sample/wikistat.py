@@ -85,3 +85,28 @@ path = './soup_sample/wiki/'
 '''
 
 # TODO сделать проверку что в найденых destinations нет самого себя
+# node_dict = {}
+nodes_passed = set()
+nodes = set()
+edges = []
+files = set(os.listdir(path))
+possible_nodes = len(list(files))
+start = 'Stone_Age'
+end = 'Python_(programming_language)'
+path = './soup_sample/wiki/'
+# node_dict_part = dict.fromkeys(find_connected_links(path, start), 1)
+# node_dict = {**node_dict, **node_dict_part}
+# print(len(node_dict))
+
+# TODO collect all edges
+while True:
+    new_paths = set(find_connected_links(path, start)).intersection(files)
+    nodes = new_paths.union(nodes)
+    nodes_passed = nodes_passed.union([start])
+    edges += [(start, r) for r in new_paths.difference(start)]
+    nodes_left = nodes.difference(nodes_passed)
+    print('Nodes passed:{}; Nodes left:{}; Possible nodes:{}'.format(len(nodes_passed), len(nodes_left), possible_nodes))
+    if nodes_left:
+        start = list(nodes_left)[0]
+    else:
+        break
