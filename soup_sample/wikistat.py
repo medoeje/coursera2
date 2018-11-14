@@ -49,6 +49,7 @@ def parse(start, end, path):
 
 
 # TODO отдельная процедура для поиска ссылок по заранее скомпилированной регулярке для файла
+# TODO Улучшить производительность
 def find_connected_links(path, base_link):
     file_text = open(path + base_link, encoding='utf-8').read()
     soup = BeautifulSoup(file_text)
@@ -98,8 +99,9 @@ path = './soup_sample/wiki/'
 # node_dict = {**node_dict, **node_dict_part}
 # print(len(node_dict))
 
-# TODO collect all edges
+
 while True:
+    # TODO проходить сперва ближайшие ноды к старту, потом перемещаться далее
     new_paths = set(find_connected_links(path, start)).intersection(files)
     nodes = new_paths.union(nodes)
     nodes_passed = nodes_passed.union([start])
