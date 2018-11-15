@@ -58,6 +58,7 @@ def find_connected_links(path, base_link):
     return bs_hrefs
     # return dict.fromkeys(bs_hrefs, base_link)
 
+
 def build_tree(path, base_link):
     tree = {}
     find_connected_links(path, base_link)
@@ -70,20 +71,6 @@ def find_route(path, start_link, end_link):
         if end_link in tree:
             break
 
-start = 'Stone_Age'
-end = 'Python_(programming_language)'
-path = './soup_sample/wiki/'
-
-'''
-1. Точка отсчёта
-2. Конечная точка
-3. Путь
-4. Ищем все ссылки конечной точки
-5. Дописываем в путь новую конечную точку если её ещё не было, в противном случае стамим метку
-6. Обновляем конечную точку
-7. Делаем пока не найдём нужный файл
-
-'''
 
 # TODO сделать проверку что в найденых destinations нет самого себя
 # node_dict = {}
