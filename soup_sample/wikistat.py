@@ -2,20 +2,20 @@ from bs4 import BeautifulSoup
 import re
 import os
 
-# Вспомогательная функция, её наличие не обязательно и не будет проверяться
-def build_tree(start, end, path):
-    link_re = re.compile(r"(?<=/wiki/)[\w()]+")  # Искать ссылки можно как угодно, не обязательно через re
-    files = dict.fromkeys(os.listdir(path))  # Словарь вида {"filename1": None, "filename2": None, ...}
-    # TODO Проставить всем ключам в files правильного родителя в значение, начиная от start
-    return files
-
-
-# Вспомогательная функция, её наличие не обязательно и не будет проверяться
-def build_bridge(start, end, path):
-    files = build_tree(start, end, path)
-    bridge = []
-    # TODO Добавить нужные страницы в bridge
-    return bridge
+# # Вспомогательная функция, её наличие не обязательно и не будет проверяться
+# def build_tree(start, end, path):
+#     link_re = re.compile(r"(?<=/wiki/)[\w()]+")  # Искать ссылки можно как угодно, не обязательно через re
+#     files = dict.fromkeys(os.listdir(path))  # Словарь вида {"filename1": None, "filename2": None, ...}
+#     # TODO Проставить всем ключам в files правильного родителя в значение, начиная от start
+#     return files
+#
+#
+# # Вспомогательная функция, её наличие не обязательно и не будет проверяться
+# def build_bridge(start, end, path):
+#     files = build_tree(start, end, path)
+#     bridge = []
+#     # TODO Добавить нужные страницы в bridge
+#     return bridge
 
 
 def parse(start, end, path):
@@ -99,16 +99,40 @@ path = './soup_sample/wiki/'
 # node_dict = {**node_dict, **node_dict_part}
 # print(len(node_dict))
 
+path_length = 0
+start_edge = [None, start, 0]
+
+
+def show_path(start, end, edges):
+  #  starter = None
+    ender = end
+    result = []
+    while start != ender:
+        result.append(min([e for e in edges if e[1] == ender], key=lambda x: x[2]))
+        ender = result[-1][0]
+    return result
+
+
 
 while True:
     # TODO проходить сперва ближайшие ноды к старту, потом перемещаться далее
+    start = start_edge[1]
+    cum_dist = start_edge[2]
     new_paths = set(find_connected_links(path, start)).intersection(files)
     nodes = new_paths.union(nodes)
     nodes_passed = nodes_passed.union([start])
-    edges += [(start, r) for r in new_paths.difference(start)]
+    edges += [[start, r, cum_dist + 1] for r in new_paths.difference(start)]
     nodes_left = nodes.difference(nodes_passed)
     print('Nodes passed:{}; Nodes left:{}; Possible nodes:{}'.format(len(nodes_passed), len(nodes_left), possible_nodes))
-    if nodes_left:
-        start = list(nodes_left)[0]
+
+    if end in nodes:
+        print('НАШЛИ!!!')
+        print(show_path(start, end, edges))
+      #  [e for e in edges if e[1]==end]
+        break
+    elif nodes_left:
+        edges_left = [e for e in edges if e[1] not in nodes_passed]
+        start_edge = min(edges_left, key=lambda x: x[2])
+        print(start_edge)
     else:
         break
