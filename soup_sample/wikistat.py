@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import re
 import os
+from datetime import datetime
 
 # # Вспомогательная функция, её наличие не обязательно и не будет проверяться
 # def build_tree(start, end, path):
@@ -57,6 +58,15 @@ def find_connected_links(path, base_link):
     bs_hrefs = [re.sub(r'/wiki/', '', link['href']) for link in bs_links]
     return bs_hrefs
     # return dict.fromkeys(bs_hrefs, base_link)
+    # 100 iterations give 1 min 12 sec
+
+def find_connected_links_new(path, base_link):
+    file_text = open(path + base_link, encoding='utf-8').read()
+    soup = BeautifulSoup(file_text)
+    bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
+    bs_hrefs = [re.sub(r'/wiki/', '', link['href']) for link in bs_links]
+    return bs_hrefs
+    # return dict.fromkeys(bs_hrefs, base_link)
 
 
 def build_tree(path, base_link):
@@ -72,22 +82,13 @@ def find_route(path, start_link, end_link):
             break
 
 
-# TODO сделать проверку что в найденых destinations нет самого себя
-# node_dict = {}
-nodes_passed = set()
-nodes = set()
-edges = []
-files = set(os.listdir(path))
-possible_nodes = len(list(files))
-start = 'Stone_Age'
-end = 'Python_(programming_language)'
-path = './soup_sample/wiki/'
-# node_dict_part = dict.fromkeys(find_connected_links(path, start), 1)
-# node_dict = {**node_dict, **node_dict_part}
-# print(len(node_dict))
 
-path_length = 0
-start_edge = [None, start, 0]
+def find_all_links(files, path):
+    link_dict = {}
+    for file in files:
+        file_text = open(path + file, encoding='utf-8').read()
+        link_dict[file] = set(re.findall(r'href=\"/wiki/(.*?)\"', file_text)).intersection(set(files))
+    return link_dict
 
 
 def show_path(start, end, edges):
@@ -100,26 +101,41 @@ def show_path(start, end, edges):
     return result
 
 
+# TODO сделать проверку что в найденых destinations нет самого себя
+# node_dict = {}
+start = 'Stone_Age'
+end = 'Python_(programming_language)'
+path = './soup_sample/wiki/'
 
-while True:
-    # TODO проходить сперва ближайшие ноды к старту, потом перемещаться далее
-    start = start_edge[1]
-    cum_dist = start_edge[2]
-    new_paths = set(find_connected_links(path, start)).intersection(files)
-    nodes = new_paths.union(nodes)
-    nodes_passed = nodes_passed.union([start])
-    edges += [[start, r, cum_dist + 1] for r in new_paths.difference(start)]
-    nodes_left = nodes.difference(nodes_passed)
-    print('Nodes passed:{}; Nodes left:{}; Possible nodes:{}'.format(len(nodes_passed), len(nodes_left), possible_nodes))
 
-    if end in nodes:
-        print('НАШЛИ!!!')
-        print(show_path(start, end, edges))
-      #  [e for e in edges if e[1]==end]
-        break
-    elif nodes_left:
-        edges_left = [e for e in edges if e[1] not in nodes_passed]
-        start_edge = min(edges_left, key=lambda x: x[2])
-        print(start_edge)
-    else:
-        break
+def get_route(start, end, path):
+    nodes_passed = set()
+    nodes = set()
+    edges = []
+    files = set(os.listdir(path))
+    possible_nodes = len(list(files))
+    link_dict = find_all_links(files, path)
+    start_edge = [None, start, 0]
+
+    while True:
+        starter = start_edge[1]
+        cum_dist = start_edge[2]
+        new_paths = link_dict.get(starter)
+        nodes = new_paths.union(nodes)
+        nodes_passed = nodes_passed.union([starter])
+        edges += [[starter, r, cum_dist + 1] for r in new_paths.difference(starter)]
+        nodes_left = nodes.difference(nodes_passed)
+        print('Nodes passed:{}; Nodes left:{}; Possible nodes:{}'.format(len(nodes_passed), len(nodes_left), possible_nodes))
+
+        if end in nodes:
+            print('НАШЛИ!!!')
+            route = show_path(start, end, edges)
+            print(route)
+            break
+        elif nodes_left:
+            edges_left = [e for e in edges if e[1] not in nodes_passed]
+            start_edge = min(edges_left, key=lambda x: x[2])
+            print(start_edge)
+        else:
+            break
+    return route
