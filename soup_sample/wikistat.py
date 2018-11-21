@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import re
 import os
+import lxml
 from datetime import datetime
 
 # # Вспомогательная функция, её наличие не обязательно и не будет проверяться
@@ -27,12 +28,17 @@ def parse(start, end, path):
     Чтобы получить максимальный балл, придется искать все страницы. Удачи!
     """
 
-    bridge = build_bridge(start, end, path)  # Искать список страниц можно как угодно, даже так: bridge = [end, start]
+    bridge = get_route(start, end, path)  # Искать список страниц можно как угодно, даже так: bridge = [end, start]
+    bridge_nodes = []
+    for i in bridge:
+        for f in i[0:2]:
+            bridge_nodes.append(f)
 
+    bridge_nodes = list(set(bridge_nodes))
     # Когда есть список страниц, из них нужно вытащить данные и вернуть их
     out = {}
-    for file in bridge:
-        with open("{}{}".format(path, file)) as data:
+    for file in bridge_nodes:
+        with open("{}{}".format(path, file), encoding='utf-8') as data:
             soup = BeautifulSoup(data, "lxml")
 
         body = soup.find(id="bodyContent")
@@ -46,27 +52,6 @@ def parse(start, end, path):
         out[file] = [imgs, headers, linkslen, lists]
 
     return out
-
-
-
-# TODO отдельная процедура для поиска ссылок по заранее скомпилированной регулярке для файла
-# TODO Улучшить производительность
-def find_connected_links(path, base_link):
-    file_text = open(path + base_link, encoding='utf-8').read()
-    soup = BeautifulSoup(file_text)
-    bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
-    bs_hrefs = [re.sub(r'/wiki/', '', link['href']) for link in bs_links]
-    return bs_hrefs
-    # return dict.fromkeys(bs_hrefs, base_link)
-    # 100 iterations give 1 min 12 sec
-
-def find_connected_links_new(path, base_link):
-    file_text = open(path + base_link, encoding='utf-8').read()
-    soup = BeautifulSoup(file_text)
-    bs_links = soup.find_all('a', {'href': re.compile(r'^/wiki/')})
-    bs_hrefs = [re.sub(r'/wiki/', '', link['href']) for link in bs_links]
-    return bs_hrefs
-    # return dict.fromkeys(bs_hrefs, base_link)
 
 
 def build_tree(path, base_link):
@@ -139,3 +124,4 @@ def get_route(start, end, path):
         else:
             break
     return route
+
